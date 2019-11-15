@@ -86,15 +86,15 @@ def read_cam_and_detect(net, cls_dict, conf_th,img):
 
 
 
-    # Initialize Caffe
-    caffe.set_device(0)
-    caffe.set_mode_gpu()
-    net = caffe.Net(DEFAULT_PROTOTXT ,DEFAULT_MODEL ,caffe.TEST)
-    # Build the class (index/name) dictionary from labelmap file
-    lm_handle = open(DEFAULT_LABELMAP, 'r')
-    lm_map = caffe_pb2.LabelMap()
-    text_format.Merge(str(lm_handle.read()), lm_map)
-    cls_dict = {x.label :x.display_name for x in lm_map.item}
+# Initialize Caffe
+caffe.set_device(0)
+caffe.set_mode_gpu()
+net = caffe.Net(DEFAULT_PROTOTXT ,DEFAULT_MODEL ,caffe.TEST)
+# Build the class (index/name) dictionary from labelmap file
+lm_handle = open(DEFAULT_LABELMAP, 'r')
+lm_map = caffe_pb2.LabelMap()
+text_format.Merge(str(lm_handle.read()), lm_map)
+cls_dict = {x.label :x.display_name for x in lm_map.item}
 
-read_cam_and_detect(net, cls_dict, conf_th,img)
+
 
