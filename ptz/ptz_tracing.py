@@ -79,6 +79,14 @@ def absolute_move(X,Y,X_threshold=320,Y_threshold = 240,find=False):
             request.Position.PanTilt.y = tilt*(Y/(2*Y_threshold))
             request.Speed.PanTilt.y= tilt_speed
         ptz.AbsoluteMove(request)
+        
+    else:
+        request.Position.PanTilt.x = pan
+        request.Speed.PanTilt.x = pan_speed
+
+        request.Position.PanTilt.y = tilt
+        request.Speed.PanTilt.y = tilt_speed
+        ptz.AbsoluteMove(request)
 
 
 
