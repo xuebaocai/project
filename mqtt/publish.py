@@ -42,8 +42,8 @@ client.reconnect_delay_set(1, 30)
 client.connect(host="183.129.253.180", port=1883, keepalive=60)
 client.loop_start()
 
-def main(alarm,image):
-    while True:
+def main(alarm,image,send=False):
+    if send == True:
         # 发布MQTT信息
         #alarm
         client.publish(topic='zn/aicamera/{}/{}/alarm'.format(device_id,serial_id),payload=alarm,qos=2)
@@ -53,7 +53,6 @@ def main(alarm,image):
         byte_array = pil_image_to_byte_array(image)
         client.publish(topic='zn/aicamera/{}/{}/alarm'.format(device_id, serial_id), payload=byte_array, qos=2)
         time.sleep(0.25)
-        break
 
 
 
