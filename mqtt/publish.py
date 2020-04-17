@@ -21,12 +21,8 @@ def pil_image_to_byte_array(image):
     return imgByteArr.getvalue()
 
 def on_connect(client, userdata, flags, rc):
-    print("Connected with result code " + str(rc))
-    #print(flags)
-
-def on_message(client, userdata, msg):
-    print(msg.topic + " " + str(msg.payload))
-
+    #print("Connected with result code " + str(rc))
+   
 def on_disconnect(client, userdata, rc):
     print("disconnect")
     client.reconnect()
@@ -35,7 +31,6 @@ def on_disconnect(client, userdata, rc):
 client = mqtt.Client()
 client.username_pw_set("aicamer_{}".format(device_id), "aicameraSecret$#")  # "admin", "password"
 client.on_connect = on_connect
-client.on_message = on_message
 client.on_disconnect = on_disconnect
 client.reconnect_delay_set(1, 30)
 
@@ -52,7 +47,7 @@ def main(alarm,image,send=False):
         image = Image.fromarray(np_array_RGB)  # PIL image
         byte_array = pil_image_to_byte_array(image)
         client.publish(topic='zn/aicamera/{}/{}/alarm'.format(device_id, serial_id), payload=byte_array, qos=2)
-        time.sleep(0.25)
+        time.sleep(5)
 
 
 
