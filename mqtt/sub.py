@@ -16,8 +16,7 @@ def on_connect(client, userdata, flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     # 在这里处理业务逻辑
-    #print(msg.topic, str(msg.payload))
-    print('1')
+    #print(msg.topic, str(msg.payload.decode('utf-8')))
     image = byte_array_to_pil_image(msg.payload)
     image = image.convert("RGB")
     image.save('/home/mengjun/project/1.jpg')
