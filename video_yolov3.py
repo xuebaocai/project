@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 import cv2
 import numpy as np
+import threading
+import time
+import mqtt.publish
 
 class general_yolov3(object):
     def __init__(self):
@@ -110,6 +113,12 @@ class general_yolov3(object):
             if self.classes:
                 assert (result["class_id"] < len(self.classes))
                 label = '%s:%s' % (self.classes[class_id], label)
+                
+                #message
+                nowtime = int(time.time())
+                if nowtime % 5 == 0:
+                        timer=threading.Thread(target=publish.main,args=(label,img_cv2,True))
+                        timer.start()
             #
             label_size, baseline = cv2.getTextSize(
                 label, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
