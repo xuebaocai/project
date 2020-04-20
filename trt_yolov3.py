@@ -30,11 +30,17 @@ def parse_args():
     parser.add_argument('--model', type=str, default='yolov3-416',
                         choices=['yolov3-288', 'yolov3-416', 'yolov3-608',
                                  'yolov3-tiny-288', 'yolov3-tiny-416'])
+    parser.add_argument('--name', dest='cam_name',default='admin')
+    parser.add_argument('--password', dest='cam_password',default='182333')
+    parser.add_argument('--ip', dest='cam_ip',
+                        help='example 10.164.18.1',
+                        default='10.14.18.1')
+
     args = parser.parse_args()
     return args
 
-def open_cam_rtsp(uri):
-    return cv2.VideoCapture(uri)
+def open_cam_rtsp(name,password,ip):
+    return cv2.VideoCapture('rtsp://{}:{}@{}:554'.format(name,password,ip))
 
 def grab_img(cap):
     global THREAD_RUNNING
@@ -75,7 +81,7 @@ def main():
     yolo_dim = int(args.model.split('-')[-1])  # 416 or 608
     trt_yolov3 = TrtYOLOv3(args.model, (yolo_dim, yolo_dim))
 
-    cap = open_cam_rtsp(uri)
+    cap = open_cam_rtsp(args.cam_name,args.cam_password,args.cam_ip)
     if not cap.isOpened():
         sys.exit('Failed to open camera!')
 
