@@ -17,7 +17,6 @@ from utils.visualization import BBoxVisualization
 import threading
 
 WINDOW_NAME = 'TrtYOLOv3Demo'
-uri = 'rtsp://admin:182333@10.164.18.251:554'
 THREAD_RUNNING = False
 IMG_HANDLE = None
 
