@@ -90,6 +90,7 @@ def main():
     th.start()
 
     vis = BBoxVisualization(cls_dict)
+    #考虑对roi区域裁剪并resize
     loop_and_detect(trt_yolov3, conf_th=0.3, vis=vis)
 
     THREAD_RUNNING = False
