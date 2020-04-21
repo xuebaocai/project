@@ -33,7 +33,7 @@ def parse_args():
     parser.add_argument('--password', dest='cam_password',default='182333')
     parser.add_argument('--ip', dest='cam_ip',
                         help='example 10.164.18.1',
-                        default='10.14.18.1')
+                        default='10.164.18.1')
 
     args = parser.parse_args()
     return args
@@ -76,23 +76,25 @@ def loop_and_detect(trt_yolov3, conf_th, vis):
 def main():
     global THREAD_RUNNING
     args = parse_args()
-    cls_dict = get_cls_dict('coco')
-    yolo_dim = int(args.model.split('-')[-1])  # 416 or 608
-    trt_yolov3 = TrtYOLOv3(args.model, (yolo_dim, yolo_dim))
-
+    
     cap = open_cam_rtsp(args.cam_name,args.cam_password,args.cam_ip)
     if not cap.isOpened():
         sys.exit('Failed to open camera!')
 
-
+    #抓取图像子进程
     THREAD_RUNNING = True
     th = threading.Thread(target=grab_img, args=(cap,))
     th.start()
-
+    
+    #目标识别
+    cls_dict = get_cls_dict('coco')
+    yolo_dim = int(args.model.split('-')[-1])  # 416 or 608
+    trt_yolov3 = TrtYOLOv3(args.model, (yolo_dim, yolo_dim))
     vis = BBoxVisualization(cls_dict)
     #考虑对roi区域裁剪并resize
     loop_and_detect(trt_yolov3, conf_th=0.3, vis=vis)
-
+    
+    #关闭图像子进程
     THREAD_RUNNING = False
     th.join()
     cap.release()
