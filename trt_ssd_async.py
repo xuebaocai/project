@@ -1,5 +1,5 @@
 """trt_ssd_async.py
-
+4.21
 This is the 'async' version of trt_ssd.py implementation.  It creates
 1 dedicated child thread for fetching camera input and do inferencing
 with the TensorRT optimized SSD model/engine, while using the main
