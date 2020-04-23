@@ -1,4 +1,4 @@
-# 2020.3.26
+# 2020.4.23
 #aicamera
 import paho.mqtt.client as mqtt
 import json
@@ -26,6 +26,9 @@ def main(alarm,image,device_id=1,serial_id=10,send=False):
     client = mqtt.Client()
     client.username_pw_set("aicamer_{}".format(device_id), "aicameraSecret$#")  # "admin", "password"
     client.on_connect = on_connect
+    
+    client.will_set('zn/aicamera/{}/{}/alarm'.format(device_id,serial_id), 'Last will message', 0, False)
+    
     client.on_disconnect = on_disconnect
     client.reconnect_delay_set(1, 30)
 
