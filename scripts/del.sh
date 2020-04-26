@@ -15,7 +15,7 @@ function deleteTimeOutFile(){
 			
 			if [ -d "$folderFileNew" ] ; then
 				# 是文件夹
-				echo $(date "+%Y-%m-%d %H:%M:%S")" 文件夹："$folderFileNew
+				#echo $(date "+%Y-%m-%d %H:%M:%S")" 文件夹："$folderFileNew
 				deleteTimeOutFile $folderFileNew"/" $timeout $type
 				if [ "`ls -A $folderFileNew`" = "" ]; then
 					# type文件夹是否需要删除  0：不删除  1：删除
@@ -25,7 +25,7 @@ function deleteTimeOutFile(){
 				fi
 					
 			elif [ -f "$folderFileNew" ] ; then  # 是文件
-				echo $(date "+%Y-%m-%d %H:%M:%S")" 文件："$folderFileNew
+				#echo $(date "+%Y-%m-%d %H:%M:%S")" 文件："$folderFileNew
 				local filetimestamp=`stat -c %Y $folderFileNew`  # 文件最后修改时间
 				local timestamp=`date +%s`  # 当前系统时间
 				local timecha=$[$timestamp - $filetimestamp]
