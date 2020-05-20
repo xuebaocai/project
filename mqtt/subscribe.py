@@ -4,7 +4,6 @@ class Subscribe():
 
     def __init__(self,host=None,topic=None):
         '''
-
         :param host: 代理ip
         :param topic: 主题
         '''
@@ -22,7 +21,6 @@ class Subscribe():
             f.write(message)
 
     def sub(self):
-
         client = mqtt.Client()
         client.on_connect = self.on_connect
         client.on_message = self.on_message
