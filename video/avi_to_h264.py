@@ -20,16 +20,16 @@ class avi_to_H264():
  
  
     def convert_byfile(self):
-        if not os.path.exists(self.from_path):
-            print("Sorry, you must create the directory for the output files first")
-        if not os.path.exists(os.path.dirname(self.to_path)):
-            os.makedirs(os.path.dirname(self.to_path), exist_ok=True)
+        #if not os.path.exists(self.from_path):
+            #print("Sorry, you must create the directory for the output files first")
+        #if not os.path.exists(os.path.dirname(self.to_path)):
+            #os.makedirs(os.path.dirname(self.to_path), exist_ok=True)
         directory, file_name = os.path.split(self.from_path)
         raw_name, extension = os.path.splitext(file_name)
         print("Converting ", self.from_path)
         self.convert_avi_to_mp4(self.from_path, self.to_path)
  
-a = mp4_to_H264(from_path = '/home/mengjun/video/zhannei.avi',to_path = '/home/mengjun/video/test.264')
+a = avi_to_H264(from_path = '/home/mengjun/video/zhannei.avi',to_path = '/home/mengjun/video/test.264')
 
 
 a.convert_byfile()
