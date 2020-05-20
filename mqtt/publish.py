@@ -16,7 +16,7 @@ def pil_image_to_byte_array(image):
     return imgByteArr.getvalue()
 
 def on_connect(client, userdata, flags, rc):
-    #print("Connected with result code " + str(rc))
+    print("Connected with result code " + str(rc))
    
 def on_disconnect(client, userdata, rc):
     #print("disconnect")
