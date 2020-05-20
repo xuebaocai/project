@@ -43,6 +43,7 @@ def main(alarm,image,device_id=1,serial_id=10,send=False):
         image = Image.fromarray(np_array_RGB)  # PIL image
         byte_array = pil_image_to_byte_array(image)
         client.publish(topic='zn/aicamera/{}/{}/alarm'.format(device_id, serial_id), payload=byte_array, qos=2)
+        time.sheep(0.1)
 
     client.loop_stop()
 
