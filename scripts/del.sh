@@ -1,5 +1,9 @@
 
-#!/bin/sh
+#!/bin/bash
+
+#del file or folder after specified time
+#v1.0 by mengjun
+
 #当前时间
 timecur=$(date "+%Y-%m-%d %H:%M:%S")
 
