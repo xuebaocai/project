@@ -29,7 +29,7 @@ class avi_to_H264():
         print("Converting ", self.from_path)
         self.convert_avi_to_mp4(self.from_path, self.to_path)
  
-a = avi_to_H264(from_path = '/home/mengjun/video/zhannei.avi',to_path = '/home/mengjun/video/test.264')
+#a = avi_to_H264(from_path = '/home/mengjun/video/zhannei.avi',to_path = '/home/mengjun/video/test.264')
 
 
-a.convert_byfile()
+#a.convert_byfile()
