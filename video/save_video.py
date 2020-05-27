@@ -1,4 +1,6 @@
-# 2020/5/20
+#录制指定时长的视频并转换成h264格式
+# v1.1 by mengjun 2020/5/26
+
 import cv2
 import time
 import avi_to_h264
@@ -7,7 +9,7 @@ import avi_to_h264
 def main(ip='10.164.18.1',save_time=1):
     '''
     :param ip: aicamera ip address
-    :return: h264 video
+    :param save_time: 录制时长，min
     '''
     file_time = time.ctime()
     file_time = file_time.replace(' ', '_')
