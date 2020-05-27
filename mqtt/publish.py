@@ -1,6 +1,6 @@
 # 2020.5.20
 # aicamera用于发送消息
-#
+#v1.0 by mengjun
 
 import paho.mqtt.client as mqtt
 import json
