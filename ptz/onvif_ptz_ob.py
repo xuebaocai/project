@@ -1,5 +1,6 @@
 #2020.3.26
 #ptz absoluteMove
+#v1.0 by mengjun
 from time import sleep
 from onvif import ONVIFCamera
 import zeep
