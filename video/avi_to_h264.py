@@ -1,4 +1,6 @@
 # coding: utf-8
+#将avi格式转换成h264
+#v1.0 by mengjun 5.26
 import sys, os
 
  
