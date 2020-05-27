@@ -1,3 +1,6 @@
+#aicamera用于接收消息并写入在指定文本
+#v1.0 by mengjun 5.20
+
 import paho.mqtt.client as mqtt
 
 class Subscribe():
