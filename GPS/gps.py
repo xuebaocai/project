@@ -12,11 +12,11 @@ def open_gps(comport = '/dev/ttyUSB0',band = 9600,send=False):
     '''
     ser = serial.Serial(comport,band)
     if send == True:
-        while ser.isOpen():
+       if ser.isOpen():
             recv = ser.readline().decode()
             if recv.startswith('$'):
                 record = pynmea2.parse(recv)
                 if recv.startswith('$GPRMC'):
                     return (record.lat,record.lon)
-            break
+           
 
