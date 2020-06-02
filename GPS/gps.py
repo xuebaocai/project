@@ -3,7 +3,7 @@ import serial
 import pynmea2
 
 
-def open_gps(comport = '/dev/ttyUSB0',band = 960):
+def open_gps(comport = '/dev/ttyUSB0',band = 9600):
     '''
     :param comport:
     :param band:
