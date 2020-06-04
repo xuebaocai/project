@@ -1,6 +1,7 @@
 #2020.6.4
 #v1.1 by mengjun
 #camera power on and off ;read power
+#crontab  * * * * * /usr/bin/python3 /home/mengjun/project/control/camera_power.py --up
 
 import sys
 import time
