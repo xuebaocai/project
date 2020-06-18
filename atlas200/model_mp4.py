@@ -27,7 +27,7 @@ def main():
         print("start")
 
         #推理结果
-        result_list = my_graph.Inference(img)
+        result_list = my_graph.Inference_single(img)
         if not result_list:
             print("get no result")
             return
