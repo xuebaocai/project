@@ -17,7 +17,7 @@ def main():
     bgr_img = cv.imread(img_path)
     img = cv.resize(bgr_img, (resize_w, resize_h))
     my_graph = ai.Graph(model_path)
-    result_list = my_graph.Inference(img)
+    result_list = my_graph.Inference_single(img)
     if not result_list:
         print("get no result")
         return
