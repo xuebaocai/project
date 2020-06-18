@@ -1,3 +1,6 @@
+#2020.6.18 V1.0 by mengjun 
+#add mult input for inference 6.18
+
 import hiai
 from hiai.nn_tensor_lib import DataType
 import numpy as np
@@ -72,7 +75,7 @@ class Graph():
         print("[create_graph_with_dvpp]: create graph successful")
         return graph
 
-    def Inference(self, *input_data):
+    def Inference_mult(self, *input_data):
         '''
         Inferece interface, process data with configured model
 
@@ -89,6 +92,19 @@ class Graph():
             result = self.graph.proc(inputNntensorList)
             result_list.append(result)
         return result_list
+    
+    def Inference_single(self, input_data):
+    '''
+    Inferece interface, process data with configured model
+
+    Args:
+        input_data: a numpy array, the data user wants to process
+
+    Returns:
+        a list, inference result
+    '''
+        inputNntensorList = self.CreateNntensorList(input_data)
+        return self.graph.proc(inputNntensorList)
 
     def CreateNntensorList(self, input_data):
         '''
@@ -100,10 +116,8 @@ class Graph():
         Returns:
             nntensorList: NNTensorList instance that can be used by graph.proc
         '''
-
         inputImageTensor = hiai.NNTensor(input_data)
         nntensorList=hiai.NNTensorList(inputImageTensor)
-
         return nntensorList
 
     def __del__(self):
