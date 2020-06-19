@@ -6,9 +6,10 @@ import sys
 import time
 import numpy as np
 import multiprocessing as mp
-import yolov3_tiny
 from settings import cam_addrs, img_shape
 from argparse import ArgumentParser
+import yolov3_tiny
+
 
 def push_image(raw_q, cam_addr):
     cap = cv2.VideoCapture(cam_addr, cv2.CAP_FFMPEG)
@@ -25,32 +26,36 @@ def push_image(raw_q, cam_addr):
             # wait for stremaing
             time.sleep(0.01)
 
+
 def predict(raw_q, pred_q):
+    model = yolov3_tiny.general_yolov3()
     while True:
-        raw_img = raw_q.get()
-        model = yolov3_tiny.general_yolov3()
-        result = model.predict(raw_img)
-        pred_img = model.vis_res(raw_img,result)
-        pred_q.put(pred_img)
+        
+         raw_img = raw_q.get()
+         result = model.predict(raw_img)
+
+         label = model.vis_res(raw_img, result)
+         pred_q.put(label)
 
 
-def pop_image(pred_q, window_name, img_shape):
-    cv2.namedWindow(window_name, flags=cv2.WINDOW_FREERATIO)
+def pop_result(pred_q,ip):
+
     while True:
-        frame = pred_q.get()
-        frame = cv2.resize(frame, img_shape)
-        cv2.imshow(window_name, frame)
-        cv2.waitKey(1)
+        result = pred_q.get()
+        print (result,ip)
 
-def display(cam_addrs, window_names, img_shape=(300, 300)):
+
+
+
+def display(cam_addrs, ips):
     raw_queues = [mp.Queue(maxsize=2) for _ in cam_addrs]
     pred_queues = [mp.Queue(maxsize=4) for _ in cam_addrs]
     processes = []
 
-    for raw_q, pred_q, cam_addr, window_name in zip(raw_queues, pred_queues, cam_addrs, window_names):
+    for raw_q, pred_q, cam_addr, ip in zip(raw_queues, pred_queues, cam_addrs, ips):
         processes.append(mp.Process(target=push_image, args=(raw_q, cam_addr)))
         processes.append(mp.Process(target=predict, args=(raw_q, pred_q)))
-        processes.append(mp.Process(target=pop_image, args=(pred_q, window_name, img_shape)))
+        processes.append(mp.Process(target=pop_result, args=(pred_q, ip)))
 
     [setattr(process, "daemon", True) for process in processes]
     [process.start() for process in processes]
@@ -58,11 +63,12 @@ def display(cam_addrs, window_names, img_shape=(300, 300)):
 
 if __name__ == '__main__':
     mp.set_start_method(method='spawn')
+
     parser = ArgumentParser()
     parser.add_argument('--num_cameras', '-n', type=int,
                         help='number of cameras to process')
     args = parser.parse_args()
     args.num_cameras = len(cam_addrs) if args.num_cameras is None else args.num_cameras
     print(args.num_cameras)
-    
-    display(cam_addrs[:args.num_cameras], ['camera' for _ in cam_addrs], img_shape)
+
+    display(cam_addrs[:args.num_cameras], [ip for ip in cam_addrs])
