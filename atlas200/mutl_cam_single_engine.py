@@ -1,3 +1,5 @@
+#2020.6.23 V1.0 by mengjun
+#多个摄像头共用一个推理模型，速度跟多摄像头多推理差不多，但消耗内存为一半。
 import cv2
 import sys
 import time
