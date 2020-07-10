@@ -1,5 +1,6 @@
 """camera_tf_trt.py
-
+# to_pd tf_version==1.12.0
+#train tf_version==1.15.0
 2020.5.7
 ssd_mobilenet_v1 16FPS
 ssd_mobilenet_v2 10FPS
