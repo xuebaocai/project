@@ -1,6 +1,6 @@
-#!/usr/bin/python
-# -*- coding: UTF-8 -*-
-# get annotation object bndbox location
+#2020.8.31
+#用于读取box的长宽比分布
+
 import os
 import numpy as np
 from sklearn.cluster import KMeans
