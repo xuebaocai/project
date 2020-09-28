@@ -1,6 +1,6 @@
-#2020.7.30
-# aicamera用于发送消息
-#v1.1 by mengjun
+#2020.9.28
+# aicamera mqtt publish
+# v1.2 by mengjun
 
 import paho.mqtt.client as mqtt
 import json
@@ -11,16 +11,17 @@ import io
 from PIL import Image
 from imutils import opencv2matplotlib
 import cv2
+import json
 
 class Publish():
 
     def __init__(self,host=None):
         '''
         
-        :param host: 代理ip
-        :param topic: 主题
-        :param img: 图片地址
-        :param msg: 文字
+        :param host: 浠ｇ悊ip
+        :param topic: 涓婚
+        :param img: 鍥剧墖鍦板潃
+        :param msg: 鏂囧瓧
         '''
         self.host = host
 
@@ -78,8 +79,11 @@ class Publish():
         client.loop_stop()
 
 if __name__ == '__main__':
-    pub = Publish(host='192.168.239.134')
-    pub.send_msg(topic='msg',msg='alarm')
-    pub.send_img(topic='msg',img='/home/mengjun/mydata/JPEGImages/person_0.jpg')
+    json_path = '/home/mengjun/xianlu/tensorrt_demos/utils/config.json'
+    with open(json_path,'r') as f:
+      config = json.load(f)
+    pub = Publish(host=config['Mqtt_pub'])
+    pub.send_msg(topic='zn/aicamera/webpagemsg/polygon',msg='[10,50,47,69]')
+    #pub.send_img(topic='msg',img='/home/mengjun/mydata/JPEGImages/person_0.jpg')
 
 
