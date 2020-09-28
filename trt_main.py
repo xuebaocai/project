@@ -13,11 +13,10 @@ from utils.ssd import TrtSSD
 from utils.camera import add_camera_args, Camera
 from utils.display import open_window, set_display, show_fps
 from utils.visualization import BBoxVisualization
-
 from control.camera_power import up
 from mqtt.publish import Publish
-from config import Host
 import threading
+import json
 
 
 WINDOW_NAME = 'TrtSsdDemo'
@@ -52,6 +51,8 @@ def loop_and_detect(cam, trt_ssd, conf_th, vis):
     full_scrn = False
     fps = 0.0
     tic = time.time()
+    global Host
+    print(Host)
     pub = Publish(host=Host)
     while True:
 
@@ -62,7 +63,7 @@ def loop_and_detect(cam, trt_ssd, conf_th, vis):
             boxes, confs, clss = trt_ssd.detect(img, conf_th)
             img, txt = vis.draw_bboxes(img, boxes, confs, clss)
             if str(txt).split(' ')[0] in DIGGER_CLASSES_LIST:
-                # 抓拍照片
+                # 鎶撴媿鐓х墖
                 nowtime = int(time.time())
                 if nowtime % 2 == 0:
                     img_signal = threading.Thread(target=pub.send_img,
@@ -74,7 +75,7 @@ def loop_and_detect(cam, trt_ssd, conf_th, vis):
                     msg_signal.start()
 
             img = show_fps(img, fps)
-            cv2.imshow(WINDOW_NAME, img)
+            #cv2.imshow(WINDOW_NAME, img)
             toc = time.time()
             curr_fps = 1.0 / (toc - tic)
             # calculate an exponentially decaying average of fps number
@@ -92,6 +93,10 @@ def loop_and_detect(cam, trt_ssd, conf_th, vis):
 def main():
     args = parse_args()
     cam = Camera(args)
+    json_path = '/home/mengjun/xianlu/tensorrt_demos/utils/config.json'
+    with open(json_path,'r') as f:
+       config = json.load(f)
+    Host = config['Mqtt_pub']
     is_open = up()
     time.sleep(60)
     if is_open:
