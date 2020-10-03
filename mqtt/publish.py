@@ -1,6 +1,6 @@
-#2020.9.28
+#2020.7.30
 # aicamera mqtt publish
-# v1.2 by mengjun
+# v1.1 by mengjun
 
 import paho.mqtt.client as mqtt
 import json
@@ -83,7 +83,12 @@ if __name__ == '__main__':
     with open(json_path,'r') as f:
       config = json.load(f)
     pub = Publish(host=config['Mqtt_pub'])
-    pub.send_msg(topic='zn/aicamera/webpagemsg/polygon',msg='[10,50,47,69]')
+   # msg = json.dumps({'Pologon':[[20,20],[20,400],[400,20],[400,400]]})
+   # pub.send_msg(topic='zn/aicamera/webpagemsg/polygon',msg=msg)
+
+    msg = json.dumps({'Work_time':['070000','240000']})
+    pub.send_msg(topic='zn/aicamera/webpagemsg/worktime',msg=msg)
+
     #pub.send_img(topic='msg',img='/home/mengjun/mydata/JPEGImages/person_0.jpg')
 
 
