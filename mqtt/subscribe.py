@@ -22,14 +22,24 @@ class Subscribe():
         global config
         global json_path
         print(msg.topic, str(msg.payload.decode('utf-8')))
-        message = str(msg.payload.decode('utf-8'))
+        message = json.loads(msg.payload)
+
         if msg.topic.split('/')[2] == 'webpagemsg':
+        
           if msg.topic.split('/')[3] == 'polygon':
-            config['Polygon'] = message
+            if len(message['Pologon']) == 4:
+              print('polygon change')
+              config['Polygon'] = message['Pologon']
+              with open(json_path,'w') as f:
+                json.dump(config,f)
           
-          with open(json_path,'w') as f:
-            
-            json.dump(config,f)
+          if msg.topic.split('/')[3] == 'worktime':
+              if len(message['Work_time']) == 2:
+                print('worktime change')
+                config['Work_time'] = message['Work_time']
+                with open(json_path,'w') as f:
+                  json.dump(config,f)
+          
 
     def sub(self):
         client = mqtt.Client()
