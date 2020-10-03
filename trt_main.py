@@ -14,11 +14,11 @@ from utils.ssd import TrtSSD
 from utils.camera import add_camera_args, Camera
 from utils.display import open_window, set_display, show_fps
 from utils.visualization import BBoxVisualization
-from control.camera_power import up
+from control.camera_power import up,down
 from mqtt.publish import Publish
 import threading
 import json
-import re
+
 
 WINDOW_NAME = 'TrtSsdDemo'
 INPUT_HW = (300, 300)
@@ -82,21 +82,16 @@ def loop_and_detect(cam, trt_ssd, conf_th, vis):
       vis: for visualization.
     """
     full_scrn = False
-    global Host,Work_time
-    print('MQTT_pub:',Host)
-    
     pub = Publish(host=Host)
     #ru qin kuang
     p1 = config['Polygon'][0]
     p2 = config['Polygon'][1]
     p3 = config['Polygon'][2]
     p4 = config['Polygon'][3]
-    
     fps = 0.0
     tic = time.time()
     
     while is_working(Work_time):
-        print('working')
         if cv2.getWindowProperty(WINDOW_NAME, 0) < 0:
             break
         img = cam.read()
@@ -174,5 +169,9 @@ if __name__ == '__main__':
        config = json.load(f)
     Host = config['Mqtt_pub']
     Work_time = config['Work_time']
-    main()
-
+    while True:
+      if is_working(Work_time):
+        main()
+      else:
+        down()
+        
