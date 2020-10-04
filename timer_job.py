@@ -73,6 +73,6 @@ while True:
        low_power_i += 1
        if low_power_i > 5:
          pub.send_msg(topic='/zn/aicamera/power', msg='Low power')
-
+     # 60min 
     timer = threading.Thread(target=dojob, args=(1 * 60, latit, longit, power,))
     timer.start()
