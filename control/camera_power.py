@@ -11,14 +11,13 @@ import argparse
 comport0 = '/dev/ttyUSB0'
 comport1 = '/dev/ttyUSB1'
 baud = 115200
-latit, longit = 0,0
+return_data,shijian,latit, longit = 0,0,0,0
 
 try:
     ser = serial.Serial(comport1, baud)
 except Exception as e:
     # if ser.isOpen() == False:
     ser = serial.Serial(comport0, baud)
-
 
 def parse_args():
     desc = ('camer power')
@@ -30,7 +29,6 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-
 # power up
 def up():
     up = bytearray.fromhex('01 10 00 E0 FF 00 55 AA')
@@ -38,16 +36,13 @@ def up():
     time.sleep(0.1)
     return True
 
-
-
 # power down
 def down():
     down = bytearray.fromhex('01 10 00 E0 00 00 55 AA')
     ser.write(down)
     time.sleep(0.1)
     return True
-
-
+    
 # power read
 def power_read():
     power = bytearray.fromhex('01 03 00 F0 00 01 55 AA')
@@ -62,19 +57,18 @@ def power_read():
         power = int(return_data, 16)
     return power
 
-
 # gps read
 def gps_read():
     gps = bytearray.fromhex('01 03 00 05 00 23 14 12')
     ser.write(gps)
     time.sleep(0.1)
     len_return_data = ser.inWaiting()
-    global latit,longit
+    global return_data,shijian,latit,longit
     if len_return_data:
         return_data = ser.read(len_return_data)
-
+        
         if len(str(return_data).split(',')) < 4:
-            return latit,longit
+            return return_data,shijian,latit,longit
 
         # time +8
         shijian = str(return_data).split(',')[1]
@@ -83,7 +77,7 @@ def gps_read():
         # E
         longit = str(return_data).split(',')[4]
 
-    return latit, longit
+    return return_data,shijian,latit, longit
 
 
 
