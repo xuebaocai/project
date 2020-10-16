@@ -1,0 +1,35 @@
+#!/bin/bash
+
+folder=${HOME}/src
+mkdir -p $folder
+
+sudo apt-get purge -y libopencv*
+
+echo "** Install requirements"
+sudo apt-get install build-essential -y
+sudo apt-get install cmake git libgtk2.0-dev pkg-config
+sudo apt-get install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
+
+cd $folder
+if [ ! -e opencv-3.4.6.zip ]; then
+  echo "** ERROR: opencv-3.4.6 directory doesn't exists"
+  exit
+fi
+unzip opencv-3.4.6.zip
+cd opencv-3.4.6/
+
+echo "** Building opencv..."
+mkdir build
+cd build/
+cmake -D BUILD_opencv_python3=YES -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_LIBV4L=ON -D PYTHON3_LIBRARIES=/usr/lib/aarch64-linux-gnu/libpython3.5m.so -D PYTHON3_NUMPY_INCLUDE_DIRS=/usr/local/lib/python3.5/dist-packages/numpy/core/include/ ..
+
+
+make -j8
+sudo make install
+sudo ldconfig
+
+python3 -c 'import cv2; print("python3 cv2 version: %s" % cv2.__version__)'
+
+echo "** Install opencv-3.4.6 successfully"
+
+                                             
