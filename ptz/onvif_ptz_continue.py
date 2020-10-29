@@ -1,7 +1,7 @@
 #2020.3.26
 #ptz continue move
 #v1.0 by mengjun
-
+#pip install onvif-zeep  cp sqlite3.dll到python DLLS文件夹
 from time import sleep
 from onvif import ONVIFCamera
 import zeep
