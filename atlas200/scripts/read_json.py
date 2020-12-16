@@ -49,7 +49,7 @@ def make_xml(voc,img_width,img_height,bbox,label,image_name,obj_nums):
 
 
 
-def bboxs_categorys(img_dir,img_id):
+def bboxs_categorys(img_dir,img_id,anno):
     bboxs = []
     categorys = []
 
@@ -75,7 +75,7 @@ def main(file_name,img_dir,voc):
         img_height = anno['images'][img_id]['height']
         #print(img_id)
         print(img_name)
-        bboxs, categorys = bboxs_categorys(img_dir,img_id+1)
+        bboxs, categorys = bboxs_categorys(img_dir,img_id+1,anno)
         time.sleep(1)
 
         dom = make_xml(voc, img_width, img_height, bboxs, categorys, img_name, len(categorys))
