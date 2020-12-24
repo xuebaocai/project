@@ -1,7 +1,8 @@
-"""trt_ssd.py
-
-This script demonstrates how to do real-time object detection with
-TensorRT optimized Single-Shot Multibox Detector (SSD) engine.
+"""
+date 2020.12.24 by mengjun
+阀室一至两个摄像头识别
+待改进：
+使用cv软解码，未找到nvr多路硬解码。
 """
 
 
@@ -48,7 +49,7 @@ def main(config):
       img_list = []
       if len(config['Channel']) == 1:
         print('1')
-        cap = cv2.VideoCapture('digger1.mp4', cv2.CAP_FFMPEG)
+        cap = cv2.VideoCapture('rtsp://admin:admin12345@{}:554/Streaming/Channels/{}01'.format(config['Camera_ip'],config['Channel'][0]), cv2.CAP_FFMPEG)
         frame,img = cap.read()
         if img is not None:
           img_list.append([img])
@@ -58,8 +59,8 @@ def main(config):
         
       if len(config['Channel']) == 2:
         print('2')
-        cap1 = cv2.VideoCapture('digger1.mp4', cv2.CAP_FFMPEG)
-        cap2 = cv2.VideoCapture('rtsp://admin:admin12345@10.151.96.197:554/Streaming/Channels/101', cv2.CAP_FFMPEG)
+        cap1 = cv2.VideoCapture('rtsp://admin:admin12345@{}:554/Streaming/Channels/{}01'.format(config['Camera_ip'],config['Channel'][0]), cv2.CAP_FFMPEG)
+        cap2 = cv2.VideoCapture('rtsp://admin:admin12345@{}:554/Streaming/Channels/{}01'.format(config['Camera_ip'],config['Channel'][1]), cv2.CAP_FFMPEG)
         frame,img1 = cap1.read()
         frame,img2 = cap2.read()
         if img1 is not None and img2 is not None:
@@ -67,12 +68,13 @@ def main(config):
         else:
           continue
       result = trt_ssd.detect(img_list[0], conf_th=0.5)
-      print(img_list[0][0].shape)
-      print(img_list[0][1].shape)
       DataSynchronization(result,img_list,args.model,'boundary_intrude',None,config['Camera_ip'],config['Channel'],config['Mqtt_pub'],config['Polygon'])
       
-    cap1.release()
-    cap2.release()
+    if len(config['Channel']) == 1:
+      cap.release()
+    else:
+      cap1.release()
+      cap2.release()
     cv2.destroyAllWindows()
 
 
