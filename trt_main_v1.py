@@ -1,4 +1,3 @@
-
 """trt_main.py
 This script demonstrates how to do real-time object detection with
 TensorRT optimized Single-Shot Multibox Detector (SSD) engine.
@@ -10,16 +9,15 @@ import argparse
 import cv2
 import pycuda.autoinit
 import numpy as np
-from utils.ssd_classes import get_cls_dict,DIGGER_CLASSES_LIST
+from utils.ssd_classes import get_cls_dict, DIGGER_CLASSES_LIST
 from utils.ssd import TrtSSD
 from utils.camera import add_camera_args, Camera
 from utils.display import open_window, set_display, show_fps
 from utils.visualization import BBoxVisualization
-from control.camera_power import up,down
+from control.camera_power import up, down
 from mqtt.publish import Publish
 import threading
 import json
-
 
 WINDOW_NAME = 'TrtSsdDemo'
 INPUT_HW = (300, 300)
@@ -40,10 +38,12 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+
 class Point():
     def __init__(self):
         self.x = 0
         self.y = 0
+
 
 def ray_casting(p, poly):
     if len(poly) < 3:
@@ -68,11 +68,13 @@ def ray_casting(p, poly):
         i += 1
     return flag
 
+
 def is_working(work_time):
-    if int(work_time[0]) <= int(time.strftime("%H%M%S")) <= int(work_time[1]):
-      return True
+    if int(work_time[0][0]) <= int(time.strftime("%H%M%S")) <= int(work_time[1][0]):
+        return True
     else:
-      return False
+        return False
+
 
 def loop_and_detect(cam, trt_ssd, conf_th, vis):
     """Continuously capture images from camera and do object detection.
@@ -84,7 +86,7 @@ def loop_and_detect(cam, trt_ssd, conf_th, vis):
     """
     full_scrn = False
     pub = Publish(host=Host)
-    #ru qin kuang
+    # ru qin kuang
     p1 = config['Polygon'][0]
     p2 = config['Polygon'][1]
     p3 = config['Polygon'][2]
@@ -94,56 +96,90 @@ def loop_and_detect(cam, trt_ssd, conf_th, vis):
     print('detect')
     while is_working(Work_time):
         img = cam.read()
-        
-        #points = np.array([p1,p2,p3,p4],np.int32)
-        #cv2.polylines(img,[points],True,(0,0,255))
-        
+
+        # points = np.array([p1,p2,p3,p4],np.int32)
+        # cv2.polylines(img,[points],True,(0,0,255))
+
         if img is not None:
             boxes, confs, clss = trt_ssd.detect(img, conf_th)
-            pt = Point()
-            for bb in boxes:
-                 pt.x = int((bb[0]+bb[2]) * 0.5)
-                 pt.y = int(0.3 * bb[1] + 0.7 * bb[3]) 
-            flag = ray_casting(pt,config['Polygon'])
-            if flag == True:
-                #cv2.circle(img, (pt.x, pt.y), 20,(255,0,0), 0)
+            if config['Is_Polygon'] == '1':
+                print('Is_Polygon')
+                pt = Point()
+                for bb in boxes:
+                    pt.x = int((bb[0] + bb[2]) * 0.5)
+                    pt.y = int(0.3 * bb[1] + 0.7 * bb[3])
+                flag = ray_casting(pt, config['Polygon'])
+                if flag == True:
+                    # cv2.circle(img, (pt.x, pt.y), 20,(255,0,0), 0)
+                    img, txt = vis.draw_bboxes(img, boxes, confs, clss)
+
+                    if str(txt).split(' ')[0] in DIGGER_CLASSES_LIST:
+                        # 鎶撴媿鐓х墖
+                        nowtime = int(time.time())
+                        if nowtime % 2 == 0:
+                            img_signal = threading.Thread(target=pub.send_img,
+                                                          args=('/zn/aicamera/{}/{}/img'.format(config['zone'],
+                                                                                                config['channel']),
+                                                                img,))
+                            img_signal.start()
+
+                            msg_signal = threading.Thread(target=pub.send_msg,
+                                                          args=('/zn/aicamera/{}/{}/alarm'.format(config['zone'],
+                                                                                                  config['channel']),
+                                                                'type-{},time-{}'.format(txt, time.ctime()),))
+                            msg_signal.start()
+
+                        print('flag:', flag, 'confs:', confs, 'clss:', clss, 'fps:', fps)
+                    # cv2.imshow(WINDOW_NAME, img)
+
+                    toc = time.time()
+                    curr_fps = 1.0 / (toc - tic)
+                    # calculate an exponentially decaying average of fps number
+                    fps = curr_fps if fps == 0.0 else (fps * 0.95 + curr_fps * 0.05)
+                    tic = toc
+            else :
+                print('Not_Polygon')
                 img, txt = vis.draw_bboxes(img, boxes, confs, clss)
-               
                 if str(txt).split(' ')[0] in DIGGER_CLASSES_LIST:
                     # 鎶撴媿鐓х墖
                     nowtime = int(time.time())
                     if nowtime % 2 == 0:
-
                         img_signal = threading.Thread(target=pub.send_img,
-                                                      args=('/zn/aicamera/{}/{}/img'.format(config['zone'],config['channel']), img,))
+                                                      args=(
+                                                      '/zn/aicamera/{}/{}/img'.format(config['zone'], config['channel']),
+                                                      img,))
                         img_signal.start()
 
                         msg_signal = threading.Thread(target=pub.send_msg,
-                                                      args=('/zn/aicamera/{}/{}/alarm'.format(config['zone'],config['channel']),'type-{},time-{}'.format(txt,time.ctime()),))
+                                                      args=(
+                                                      '/zn/aicamera/{}/{}/alarm'.format(config['zone'], config['channel']),
+                                                      'type-{},time-{}'.format(txt, time.ctime()),))
                         msg_signal.start()
-      
-                
-                print('flag:',flag,'confs:',confs,'clss:',clss,'fps:',fps)
-                #cv2.imshow(WINDOW_NAME, img)
-                
+
+                    print('confs:', confs, 'clss:', clss, 'fps:', fps)
+                # cv2.imshow(WINDOW_NAME, img)
+
                 toc = time.time()
                 curr_fps = 1.0 / (toc - tic)
                 # calculate an exponentially decaying average of fps number
-                fps = curr_fps if fps == 0.0 else (fps*0.95 + curr_fps*0.05)
+                fps = curr_fps if fps == 0.0 else (fps * 0.95 + curr_fps * 0.05)
                 tic = toc
         else:
             print('img is none')
+            cam.stop()
+            cam.release()
             break
+
         key = cv2.waitKey(1)
         if key == 27:  # ESC key: quit program
-          break
+            break
 
 
-def main():
-    args = parse_args()
-    cam = Camera(args)
+def main(args, cam):
+    # args = parse_args()
     is_open = up()
     time.sleep(60)
+    # cam = Camera(args)
     if is_open:
         cam.open()
         if not cam.is_opened:
@@ -163,13 +199,16 @@ def main():
 
 if __name__ == '__main__':
     json_path = '/home/mengjun/xianlu/tensorrt_demos/utils/config.json'
-    with open(json_path,'r') as f:
-       config = json.load(f)
+    with open(json_path, 'r') as f:
+        config = json.load(f)
     Host = config['Mqtt_pub']
     Work_time = config['Work_time']
+
+    args = parse_args()
+    cam = Camera(args)
     while True:
-      if is_working(Work_time):
-        main()
-      else:
-        down()
-        time.sleep(100)
+        if is_working(Work_time):
+            main(args, cam)
+        else:
+            down()
+            time.sleep(100)
