@@ -1,1 +1,1 @@
-{"Mqtt_pub": "192.168.8.101", "Mqtt_sub": "192.168.8.101", "Camera_ip": "10.151.96.197", "Channel": [1,2], "Work_time": [700, 1800], "Polygon": []}
+{"Mqtt_pub": "222.73.85.26", "Mqtt_sub": "183.129.235.180", "Zone":"下沙站","Camera_ip": "10.164.29.67", "Channel": [5],"device_id": "001", "Work_time": [700, 1800], "Polygon": []}
