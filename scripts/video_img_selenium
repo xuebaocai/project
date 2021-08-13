@@ -1,0 +1,199 @@
+'''
+by mengjun at 2021/8/13
+V1.0
+'''
+
+
+
+import time
+from selenium import webdriver
+from selenium.webdriver.common.action_chains import ActionChains
+import re
+import cv2
+import logging
+import threading
+import os
+import argparse
+from pathlib import Path
+from datetime import datetime
+
+
+def parse_opt():
+    parser = argparse.ArgumentParser(description='read video to img,per min 3')
+    parser.add_argument('--driver_path', type=str, default='/home/chromedriver')
+    parser.add_argument('--page_url', type=str)
+    parser.add_argument('--page_num', type=int)
+    parser.add_argument('--img_path', type=str, default='/home/video_img/img2')
+    parser.add_argument('--minutes', type=int, default=3)
+    opt = parser.parse_args()
+    return opt
+
+#获取网页的http,time
+def http_time(http_list, time_list):
+    http_view = browser.find_elements_by_class_name('text-primary')
+    for i in http_view:
+        if re.match('^http', i.text):
+            http_list.append(i.text)
+
+    time_view = browser.find_elements_by_class_name('cell')
+    for i in time_view:
+        if re.match('^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$', i.text):
+            time_list.append(i.text)
+    return http_list, time_list
+
+#登录指定网页
+def login_http(page_url, page_num_max):
+    try:
+        browser.get(page_url)
+        time.sleep(3)
+
+        username = browser.find_element_by_xpath('//*[@id="login-form"]/div[1]/input')
+        username.send_keys("zngd-live")
+        password = browser.find_element_by_xpath('//*[@id="login-form"]/div[2]/input')
+        password.send_keys("0iP&$rZ8V*&DWaD4")
+        logIn = browser.find_element_by_xpath("//*[@id='btn-login']")
+        logIn.click()
+    except:
+        print('{} login error'.format(page_url))
+
+    # browser.refresh()
+    time.sleep(5)
+
+    http_list = []
+    time_list = []
+
+    new_http_list = []
+    new_time_list = []
+
+    if page_num_max > 1:
+        for page_i in range(page_num_max - 1):
+            http_list_1, time_list_1 = http_time(http_list, time_list)
+            time.sleep(10)
+
+            view = browser.find_element_by_xpath("/html/body/div[1]/div[3]/section/div/div/div[3]/div/button[2]/i")
+            action = ActionChains(browser).click(view)
+            action.perform()
+            time.sleep(3)
+
+        http_list, time_list = http_time(http_list_1, time_list_1)
+    else:
+        http_list, time_list = http_time(http_list, time_list)
+
+    for h, t in zip(http_list, time_list):
+        if len(t.split(':')) == 3:
+            if int(t.split(':')[1]) >= 10 or int(t.split(':')[0]) > 0 and h.endswith('.m3u8'):
+                new_http_list.append(h)
+                new_time_list.append(t)
+    print(len(new_http_list), len(new_time_list))
+    return new_http_list, new_time_list
+
+#以特定时间间隔截取视频图片
+def video_img(http_list, time_list, img_path, time_i):
+    # Configure file
+    logging.basicConfig(filename='logs_1.log', filemode='a+',
+                        format='%(levelname)s -> %(asctime)s: %(message)s', level=logging.DEBUG)
+
+    for h, t in zip(http_list, time_list):
+        print(h, t, threading.current_thread().name)
+        logging.info('{}_thread_{}'.format(h, threading.current_thread().name))
+        count = 1
+        cap = cv2.VideoCapture(h)
+        seconds = cap.get(cv2.CAP_PROP_FRAME_COUNT)/cap.get(cv2.CAP_PROP_FPS)
+
+        try:
+            assert cap.isOpened(), print(f'{h} cap open fail')
+
+            while cap.isOpened():
+                # temp = cap.get(0)
+                ret, frame = cap.read()
+                cv2.imwrite(img_path + '/' + '{}_{}.jpg'.format(datetime.now().strftime('%y%m%d%H%M%S'),
+                                                                threading.current_thread().name), frame)
+                cap.set(cv2.CAP_PROP_POS_MSEC, time_i * 60 * 1000 * count)
+                count += 1
+                if time_i * 60 * count >= seconds:
+                    print(f'{threading.current_thread().name} end')
+                    break
+            # time.sleep(0.1)
+        except:
+            print('m3u8 next')
+
+            cap.release()
+            cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    options = webdriver.ChromeOptions()
+    options.add_argument("headless")
+    options.add_argument('--no-sandbox')
+    opt = parse_opt()
+    browser = webdriver.Chrome(opt.driver_path, options=options)
+
+    # opt.page_url = 'http://112.245.48.207:10000/#/cloudrecord/listview/34020000001110000401/34020000001320000401/20210325'
+    # opt.page_num = 1
+    http_list, time_list = login_http(opt.page_url, opt.page_num)
+    print(time_list)
+
+    if not Path(opt.img_path).exists():
+        Path.mkdir(Path(opt.img_path))
+    num = len(http_list)
+
+    end_1 = int(num / 6)
+    end_2 = 2 * end_1
+    end_3 = 3 * end_1
+    end_4 = 4 * end_1
+    end_5 = 5 * end_1
+
+
+    p1 = threading.Thread(target=video_img, args=(http_list[:end_1], time_list[:end_1], opt.img_path, opt.minutes,),
+                          name='1')
+    p1.start()
+
+    
+    p2 = threading.Thread(target=video_img,
+                          args=(http_list[end_1:end_2], time_list[end_1:end_2], opt.img_path, opt.minutes,),
+                          name='2')
+    p2.start()
+
+    p3 = threading.Thread(target=video_img,
+                          args=(http_list[end_2:end_3], time_list[end_2:end_3], opt.img_path, opt.minutes,),
+                          name='3')
+    p3.start()
+
+    
+    p4 = threading.Thread(target=video_img,
+                          args=(http_list[end_3:end_4], time_list[end_3:end_4], opt.img_path, opt.minutes,),
+                          name='4')
+    p4.start()
+
+
+    p5 = threading.Thread(target=video_img,
+                          args=(http_list[end_4:end_5], time_list[end_4:end_5], opt.img_path, opt.minutes,),
+                          name='5')
+    p5.start()
+
+    p6 = threading.Thread(target=video_img, args=(http_list[end_5:], time_list[end_5:],  opt.img_path, opt.minutes,),
+                          name='6')
+    p6.start()
+    
+    browser.quit()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
