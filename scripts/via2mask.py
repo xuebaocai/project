@@ -15,9 +15,9 @@ annotations_point = list(annotations_point.values())
 
 annotations_point = [a for a in annotations_point if a['regions']]
 
-
+num = 0
 for i in range(len(annotations_point)):  
-    num = 0
+    
     filename = annotations_point[i]['filename']
     if filename.startswith('微信'):
         filename = filename.replace(filename.split('_')[0],'weixin')
