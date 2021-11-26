@@ -19,10 +19,10 @@ class CUDAStreamer:
                 "panic",
                 "-hwaccel",
                 "nvdec",
-                "-reorder_queue_size",
-                "10000",
-                "-rtsp_transport",
-                "tcp",
+                "-reorder_queue_size", #
+                "10000",               #
+                "-rtsp_transport",     #
+                "tcp",                 #四个隐掉 为rtmp
                 "-i",
                 camera_url,
                 "-vsync",
