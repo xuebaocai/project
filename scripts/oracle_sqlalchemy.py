@@ -46,11 +46,8 @@ TDM_C_WELD_JOINT_df = TDM_C_WELD_JOINT_df.drop([col for col in TDM_C_WELD_JOINT_
 TDM_C_WELD_JOINT_df.rename(columns={'id':'weld_joint_id'},inplace=True)
 
 
-
 #滤除TDM_C_PIPE_GROOVE_GROUP_df表其他项目
 TDM_C_PIPE_GROOVE_GROUP_df = TDM_C_PIPE_GROOVE_GROUP_df[TDM_C_PIPE_GROOVE_GROUP_df['project_id'].apply(lambda x:x in project_tuple)]
-#print(TDM_C_PIPE_GROOVE_GROUP_df.describe 82775  x 43
-
 TDM_C_PIPE_GROOVE_GROUP_df_retain_col = ['weld_joint_id','groove_type','OUTSIDE_GROOVE_Α','OUTSIDE_GROOVE_Β',
                                          'INNER_GROOVE_Γ','blunt_edge_p','blunt_change_point_h','inner_groove_height_h',
                                          'tube_cleaning','wrong_side','counterpart_clearance_b','max_wrong_side',
@@ -60,16 +57,14 @@ TDM_C_PIPE_GROOVE_GROUP_df_retain_col = ['weld_joint_id','groove_type','OUTSIDE_
 TDM_C_PIPE_GROOVE_GROUP_df = TDM_C_PIPE_GROOVE_GROUP_df.drop([col for col in TDM_C_PIPE_GROOVE_GROUP_df.columns \
                                                  if col not in TDM_C_PIPE_GROOVE_GROUP_df_retain_col],\
                                                  axis=1)
-#print(TDM_C_PIPE_GROOVE_GROUP_df.describe) 01/29 82775  x 19
+#print(TDM_C_PIPE_GROOVE_GROUP_df.describe) 01/29 82775  x 18
+#去除重复值
+TDM_C_PIPE_GROOVE_GROUP_df.drop_duplicates('weld_joint_id',inplace=True)
+
 
 #TDM_C_PIPE_GROOVE_GROUP_df,TDM_C_WELD_JOINT_df 联立weld_joint_id
 PIPE_GROOVE_GROUP_WELD_JOINT_df = pd.merge(TDM_C_WELD_JOINT_df,TDM_C_PIPE_GROOVE_GROUP_df,on='weld_joint_id',how='left')
-
-
-
-#去除重复值
-PIPE_GROOVE_GROUP_WELD_JOINT_df.drop_duplicates(inplace=True)
-#print(PIPE_GROOVE_GROUP_WELD_JOINT_df.describe)#89094 rows x 22
+# 89094 rows x 22
 
 
 #PIPE_GROOVE_GROUP_WELD_JOINT_df = PIPE_GROOVE_GROUP_WELD_JOINT_df.set_index('weld_number')
@@ -85,12 +80,13 @@ TDM_C_WELD_df_retain_col = ['weld_joint_id','relative_mileage','weld_preheating_
 TDM_C_WELD_df = TDM_C_WELD_df.drop([col for col in TDM_C_WELD_df.columns \
                                                  if col not in TDM_C_WELD_df_retain_col],\
                                                  axis=1)
+TDM_C_WELD_df.drop_duplicates('weld_joint_id',inplace=True)
 #print(TDM_C_WELD_df.describe) 01/29 82737 x 5
 
 #上述三表合并
 GROOVE_WELD_JOINT_df = pd.merge(PIPE_GROOVE_GROUP_WELD_JOINT_df,TDM_C_WELD_df,on='weld_joint_id',how='left')
 GROOVE_WELD_JOINT_df.drop_duplicates(inplace=True)
-#print(GROOVE_WELD_JOINT_df.describe) #89094x 32
+#print(GROOVE_WELD_JOINT_df.describe) #89094x 26
 
 
 
@@ -109,24 +105,26 @@ TDM_C_PIPE_LINE_TEST_df = TDM_C_PIPE_LINE_TEST_df.drop([col for col in TDM_C_PIP
                                                  axis=1)
 TDM_C_PIPE_LINE_TEST_df.rename(columns={'id':'test_id'},inplace=True)
 #print(TDM_C_PIPE_LINE_TEST_df.describe) #78376 x 4
-TDM_C_TEST_DEFECTION_df_retain_col = ['test_id','defection_location',
-                                      'defection_property','defection_length']
+TDM_C_TEST_DEFECTION_df_retain_col = ['test_id','defection_no','defection_location',
+                                      'defection_property','defection_length','defection_deep',
+                                      'defection_height','self_height','defection_location_end']
 TDM_C_TEST_DEFECTION_df = TDM_C_TEST_DEFECTION_df.drop([col for col in TDM_C_TEST_DEFECTION_df.columns \
                                                  if col not in TDM_C_TEST_DEFECTION_df_retain_col],
                                                  axis=1)
-#print(TDM_C_TEST_DEFECTION_df.describe) 321697  x 4
+#print(TDM_C_TEST_DEFECTION_df.describe) #321697 rows x 9
+
+TDM_C_TEST_DEFECTION_df.drop_duplicates('test_id',inplace=True)
 
 #TDM_C_PIPE_LINE_TEST_df,TDM_C_TEST_DEFECTION_df合并
 TEST_DEFECTION_df = pd.merge(TDM_C_PIPE_LINE_TEST_df,TDM_C_TEST_DEFECTION_df,on='test_id',how='left')
 
-TEST_DEFECTION_df.drop_duplicates('test_id',inplace=True)
 
-#print('5',TEST_DEFECTION_df.describe) #78376 rows x 7
+#print('5',TEST_DEFECTION_df.describe) #78376 rows x 12
 
+
+TEST_DEFECTION_df.drop_duplicates('weld_joint_id',inplace=True)
+#上述五表合并
 GROOVE_WELD_JOINT_TEST_DEFECTION_df = pd.merge(GROOVE_WELD_JOINT_df,TEST_DEFECTION_df,on='weld_joint_id',how='left')
 
-GROOVE_WELD_JOINT_TEST_DEFECTION_df.drop_duplicates('weld_joint_id',inplace=True)
-print(GROOVE_WELD_JOINT_TEST_DEFECTION_df.describe) #89094 rows x 32
-
-
+#print(GROOVE_WELD_JOINT_TEST_DEFECTION_df.describe) #89094 rows x 37
 
