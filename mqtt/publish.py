@@ -13,6 +13,17 @@ from imutils import opencv2matplotlib
 import cv2
 import json
 
+
+
+def buffer_to_base64(image_buffer, encoding='utf-8'):
+    return base64.b64encode(image_buffer.getvalue()).decode(encoding)
+
+def pil_to_base64(image_pil, encoding='utf-8', format='jpeg', **format_args):
+    image_buffer = io.BytesIO()
+    image_pil.save(image_buffer, format=format, **format_args)
+    return buffer_to_base64(image_buffer, encoding=encoding)
+
+
 class Publish():
 
     def __init__(self,host=None):
@@ -53,10 +64,21 @@ class Publish():
         client.connect(host=self.host, port=1883, keepalive=60)
         client.loop_start()
         # image
-        np_array_RGB = opencv2matplotlib(img)  # Convert to RGB
-        image = Image.fromarray(np_array_RGB)  # PIL image
-        byte_array = self.pil_image_to_byte_array(image)
-        client.publish(topic=topic, payload=byte_array, qos=2)
+        #np_array_RGB = opencv2matplotlib(img)  # Convert to RGB
+        #image = Image.fromarray(np_array_RGB)  # PIL image
+        #byte_array = self.pil_image_to_byte_array(image)
+        
+        np_array_RGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        image = Image.fromarray(np_array_RGB)
+        pil_base64 = pil_to_base64(image)
+        alarm = {"camera_id": record_info['camera_id'],
+                             "camera_name": record_info['camera_name'],
+                             "alg_name": record_info['alg'],
+                             'alarm': alarm_type,
+                             "img": pil_base64,
+                             "eventTime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+                             }
+        client.publish(topic=topic, payload=alarm, qos=2)
         time.sleep(0.1)
 
         client.loop_stop()
