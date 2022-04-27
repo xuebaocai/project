@@ -4,6 +4,9 @@
 import paho.mqtt.client as mqtt
 import json
 
+def base64_to_pil(image_base64):
+    return Image.open(io.BytesIO(base64.b64decode(image_base64)))
+
 class Subscribe():
 
     def __init__(self,host=None,topic=None):
