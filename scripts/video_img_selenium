@@ -1,10 +1,7 @@
 '''
-by mengjun at 2021/9/6
-V1.1
+by mengjun at 2022/6/29
+V1.2
 '''
-
-
-
 import time
 from selenium import webdriver
 from selenium.webdriver.common.action_chains import ActionChains
@@ -18,30 +15,50 @@ from pathlib import Path
 from datetime import datetime
 
 
+def Log(file):
+    # Configure file
+    logging.basicConfig(filename=f'{file}', filemode='w+',
+                        format='%(levelname)s -> %(asctime)s: %(message)s', level=logging.INFO)
+    return logging
+
+
 def parse_opt():
     parser = argparse.ArgumentParser(description='read video to img,per min 3')
-    parser.add_argument('--driver_path', type=str, default='/home/chromedriver')
+    #谷歌浏览器驱动位置
+    parser.add_argument('--driver_path', type=str, default='C:/Users/admin/Desktop/chromedriver.exe')
+    #网址地址
     parser.add_argument('--page_url', type=str)
+    #该地址有几页
     parser.add_argument('--page_num', type=int)
-    parser.add_argument('--img_path', type=str, default='/home/video_img/img2')
+    #图片保存位置
+    parser.add_argument('--img_path', type=str, default='D:/data/raw_img')
+    #page_url，page_num配置文件
+    parser.add_argument('--date_path', type=str, default='data.txt')
+    #每隔几分钟抓取
     parser.add_argument('--minutes', type=int, default=3)
+    #日志
+    parser.add_argument('--log_file', type=str, default='logs.log')
     opt = parser.parse_args()
     return opt
 
 
-def http_time():
+def http_time(http_list, time_list):
     http_view = browser.find_elements_by_class_name('text-primary')
-    http_list = [i.text for i in http_view if re.match('^http', i.text)]
+    for i in http_view:
+        if re.match('^http', i.text):
+            http_list.append(i.text)
 
     time_view = browser.find_elements_by_class_name('cell')
-    time_list = [i.text for i in time_view if re.match('^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$', i.text) ]
+    for i in time_view:
+        if re.match('^([01]\d|2[0-3]):[0-5]\d:[0-5]\d$', i.text):
+            time_list.append(i.text)
     return http_list, time_list
 
 
 def login_http(page_url, page_num_max):
     try:
         browser.get(page_url)
-        time.sleep(3)
+        time.sleep(10)
 
         username = browser.find_element_by_xpath('//*[@id="login-form"]/div[1]/input')
         username.send_keys("zngd-live")
@@ -55,9 +72,15 @@ def login_http(page_url, page_num_max):
     # browser.refresh()
     time.sleep(5)
 
+    http_list = []
+    time_list = []
+
+    new_http_list = []
+    new_time_list = []
+
     if page_num_max > 1:
         for page_i in range(page_num_max - 1):
-            http_list_1, time_list_1 = http_time()
+            http_list_1, time_list_1 = http_time(http_list, time_list)
             time.sleep(10)
 
             view = browser.find_element_by_xpath("/html/body/div[1]/div[3]/section/div/div/div[3]/div/button[2]/i")
@@ -65,27 +88,21 @@ def login_http(page_url, page_num_max):
             action.perform()
             time.sleep(3)
 
-        http_list, time_list = http_time()
-        http_list.extend(http_list_1)
-        time_list.extend(time_list_1)
+        http_list, time_list = http_time(http_list_1, time_list_1)
     else:
-        http_list, time_list = http_time()
+        http_list, time_list = http_time(http_list, time_list)
 
-    new_http_list = []
-    new_time_list = []
     for h, t in zip(http_list, time_list):
         if len(t.split(':')) == 3:
-            if int(t.split(':')[1]) > 3 or int(t.split(':')[0]) > 0 and h.endswith('.m3u8'):
+            if int(t.split(':')[1]) >= 10 or int(t.split(':')[0]) > 0 and h.endswith('.m3u8'):
                 new_http_list.append(h)
                 new_time_list.append(t)
     print(len(new_http_list), len(new_time_list))
     return new_http_list, new_time_list
 
 
-def video_img(http_list, time_list, img_path, time_i):
-    # Configure file
-    logging.basicConfig(filename='logs_1.log', filemode='a+',
-                        format='%(levelname)s -> %(asctime)s: %(message)s', level=logging.DEBUG)
+def video_img(http_list, time_list, img_path, time_i,logging):
+
 
     for h, t in zip(http_list, time_list):
         print(h, t, threading.current_thread().name)
@@ -114,6 +131,11 @@ def video_img(http_list, time_list, img_path, time_i):
             cap.release()
             cv2.destroyAllWindows()
 
+def read(file):
+    with open(file, 'r+') as f:
+        for line in f.readlines():
+            yield line
+
 
 if __name__ == "__main__":
     options = webdriver.ChromeOptions()
@@ -122,46 +144,70 @@ if __name__ == "__main__":
     opt = parse_opt()
     browser = webdriver.Chrome(opt.driver_path, options=options)
 
-    # opt.page_url = 'http://112.245.48.207:10000/#/cloudrecord/listview/34020000001110000401/34020000001320000401/20210325'
-    # opt.page_num = 1
-    http_list, time_list = login_http(opt.page_url, opt.page_num)
-    print(time_list)
-
     if not Path(opt.img_path).exists():
         Path.mkdir(Path(opt.img_path))
-    num = len(http_list)
-    end_1 = 1 if num < 6 else int(num/6)
-    end_2 = 2 * end_1
-    end_3 = 3 * end_1
-    end_4 = 4 * end_1
-    end_5 = 5 * end_1
+    logging = Log(opt.log_file)
 
-    p1 = threading.Thread(target=video_img, args=(http_list[:end_1], time_list[:end_1], opt.img_path, opt.minutes,),
-                          name='1')
-    p1.start()
+    #opt.page_url = 'http://222.188.25.182:10000/#/cloudrecord/listview/34020000001110000101/34020000001320000107/20210830'
+    #opt.page_num = 4
 
-    p2 = threading.Thread(target=video_img,
-                          args=(http_list[end_1:end_2], time_list[end_1:end_2], opt.img_path, opt.minutes,),
-                          name='2')
-    p2.start()
 
-    p3 = threading.Thread(target=video_img,
-                          args=(http_list[end_2:end_3], time_list[end_2:end_3], opt.img_path, opt.minutes,),
-                          name='3')
-    p3.start()
+    for line in read(opt.date_path):
+        line = line.strip()
+        if line == '':
+            break
+        print('line', line)
 
-    p4 = threading.Thread(target=video_img,
-                          args=(http_list[end_3:end_4], time_list[end_3:end_4], opt.img_path, opt.minutes,),
-                          name='4')
-    p4.start()
+        line_show = line.center(120,'*')
+        logging.info(f'line:{line_show}')
+        opt.page_url, opt.page_num = line.split(' ')[0], line.split(' ')[1]
 
-    p5 = threading.Thread(target=video_img,
-                          args=(http_list[end_4:end_5], time_list[end_4:end_5], opt.img_path, opt.minutes,),
-                          name='5')
-    p5.start()
+        http_list, time_list = login_http(opt.page_url, int(opt.page_num))
+        print(time_list)
 
-    p6 = threading.Thread(target=video_img, args=(http_list[end_5:], time_list[end_5:], opt.img_path, opt.minutes,),
-                          name='6')
-    p6.start()
+        num = len(http_list)
 
+
+        end_1 = int(num / 3)
+        end_2 = 2 * end_1
+        #end_3 = 3 * end_1
+        #end_4 = 4 * end_1
+        #end_5 = 5 * end_1
+
+        p1 = threading.Thread(target=video_img, args=(http_list[:end_1], time_list[:end_1],
+                                                      opt.img_path, opt.minutes, logging),
+                              name='1')
+        p1.start()
+
+        p2 = threading.Thread(target=video_img,
+                              args=(http_list[end_1:end_2], time_list[end_1:end_2],
+                                    opt.img_path, opt.minutes, logging),
+                              name='2')
+        p2.start()
+
+        p3 = threading.Thread(target=video_img,
+                              args=(http_list[end_2:], time_list[end_2:],
+                                    opt.img_path, opt.minutes, logging),
+                              name='3')
+        p3.start()
+
+
+        '''
+        p4 = threading.Thread(target=video_img,
+                              args=(http_list[end_3:end_4], time_list[end_3:end_4], opt.img_path, opt.minutes,),
+                              name='4')
+        p4.start()
+    
+        p5 = threading.Thread(target=video_img,
+                              args=(http_list[end_4:end_5], time_list[end_4:end_5], opt.img_path, opt.minutes,),
+                              name='5')
+        p5.start()
+    
+        p6 = threading.Thread(target=video_img, args=(http_list[end_5:], time_list[end_5:], opt.img_path, opt.minutes,),
+                              name='6')
+        p6.start()
+        '''
+
+        browser.refresh()
+        time.sleep(10)
     browser.quit()
