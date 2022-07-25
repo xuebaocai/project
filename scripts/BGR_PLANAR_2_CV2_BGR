@@ -1,0 +1,9 @@
+data = np.load(r'C:\Users\29651\Desktop\img.npy')
+data = np.resize(data,(3,300,300))
+img_serial_data = np.array(data)
+img_serial_data = img_serial_data.astype(np.uint8)
+
+op = np.transpose(img_serial_data,[1,2,0])
+
+cv2.imshow('read_raw_planar',op[:,:,[0,1,2]])
+cv2.waitKey(0)
