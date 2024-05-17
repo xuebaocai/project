@@ -13,7 +13,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+'''
+labelme->coco
+python tools/x2coco.py \
+                --dataset_type labelme \
+                --json_input_dir ./labelme_annos/ \
+                --image_input_dir ./labelme_imgs/ \
+                --output_dir ./cocome/ \
+                --train_proportion 0.8 \
+                --val_proportion 0.2 \
+                --test_proportion 0.0
 
+voc->coco
+python tools/x2coco.py \
+        --dataset_type voc \
+        --voc_anno_dir path/to/VOCdevkit/VOC2007/Annotations/ \
+        --voc_anno_list path/to/VOCdevkit/VOC2007/ImageSets/Main/trainval.txt \
+        --voc_label_list dataset/voc/label_list.txt \
+        --voc_out_name voc_train.json
+'''
 import argparse
 import glob
 import json
